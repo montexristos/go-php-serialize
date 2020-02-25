@@ -76,9 +76,9 @@ func encodeString(buf *bytes.Buffer, strValue string) {
 	valLen := strconv.Itoa(len(strValue))
 	buf.WriteString(valLen)
 	buf.WriteRune(TYPE_VALUE_SEPARATOR)
-	buf.WriteRune('"')
+	buf.WriteRune('\'')
 	buf.WriteString(strValue)
-	buf.WriteRune('"')
+	buf.WriteRune('\'')
 }
 
 func encodeArrayCore(buf *bytes.Buffer, arrValue map[interface{}]interface{}) (err error) {
