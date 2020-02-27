@@ -58,6 +58,10 @@ func encodeValue(buf *bytes.Buffer, value interface{}) (err error) {
 		buf.WriteString("a")
 		buf.WriteRune(TYPE_VALUE_SEPARATOR)
 		err = encodeArrayCore(buf, t)
+	case map[string]interface{}:
+		buf.WriteString("a")
+		buf.WriteRune(TYPE_VALUE_SEPARATOR)
+		err = encodeMap(buf, t)
 	case []interface{}:
 		buf.WriteString("a")
 		buf.WriteRune(TYPE_VALUE_SEPARATOR)
@@ -76,9 +80,9 @@ func encodeString(buf *bytes.Buffer, strValue string) {
 	valLen := strconv.Itoa(len(strValue))
 	buf.WriteString(valLen)
 	buf.WriteRune(TYPE_VALUE_SEPARATOR)
-	buf.WriteRune('\'')
+	buf.WriteRune('"')
 	buf.WriteString(strValue)
-	buf.WriteRune('\'')
+	buf.WriteRune('"')
 }
 
 func encodeArrayCore(buf *bytes.Buffer, arrValue map[interface{}]interface{}) (err error) {
@@ -105,12 +109,37 @@ func encodeArrayCore(buf *bytes.Buffer, arrValue map[interface{}]interface{}) (e
 	return err
 }
 
-func encodeSlice(buf *bytes.Buffer, sliceValue []interface{}) (err error) {
-	arrValue := make(map[interface{}]interface{}, 0)
+func encodeMap(buf *bytes.Buffer, arrValue map[string]interface{}) (err error) {
+	result := make(map[interface{}]interface{}, 0)
 
-	for i, val := range sliceValue {
-		arrValue[i] = val
+	for i, val := range arrValue {
+		result[i] = val
 	}
 
-	return encodeArrayCore(buf, arrValue)
+	return encodeArrayCore(buf, result)
+}
+
+func encodeSlice(buf *bytes.Buffer, sliceValue []interface{}) (err error) {
+
+	valLen := strconv.Itoa(len(sliceValue))
+	buf.WriteString(valLen)
+	buf.WriteRune(TYPE_VALUE_SEPARATOR)
+
+	buf.WriteRune('{')
+	for k, v := range sliceValue {
+		if intKey, _err := strconv.Atoi(fmt.Sprintf("%v", k)); _err == nil {
+			if err = encodeValue(buf, intKey); err != nil {
+				break
+			}
+		} else {
+			if err = encodeValue(buf, k); err != nil {
+				break
+			}
+		}
+		if err = encodeValue(buf, v); err != nil {
+			break
+		}
+	}
+	buf.WriteRune('}')
+	return err
 }

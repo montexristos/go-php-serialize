@@ -1,6 +1,7 @@
 package phpserialize
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -29,4 +30,22 @@ func TestEncodeArrayValue2(t *testing.T) {
 		t.Errorf("data %v => %v\n", err, result)
 		result, err = Encode("s\"tr'}e")
 		t.Errorf("data %v => %v\n", err, result)*/
+}
+
+func Test_encodeSlice(t *testing.T) {
+	buffer := &bytes.Buffer{}
+	buffer.WriteString("a")
+	buffer.WriteRune(TYPE_VALUE_SEPARATOR)
+	sl := []interface{}{
+		"en",
+		"tee",
+	}
+	err := encodeSlice(buffer, sl)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if buffer.String() != `a:2:{i:0;s:2:"en";i:1;s:3:"tee";}` {
+		t.Error("error serializing array")
+	}
 }
